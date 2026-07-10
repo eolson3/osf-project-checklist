@@ -4,11 +4,19 @@ A hosted FastAPI application that lets a user connect an OSF account and review 
 
 ## User flow
 
+### Recommended: Personal Access Token
+
 1. Open the app.
-2. Select **Connect to OSF**.
-3. Authorize read access.
-4. Search, filter, expand, check, and export the hierarchy.
-5. Checklist progress is retained in browser local storage.
+2. Create a read-only OSF Personal Access Token.
+3. Paste it into the app.
+4. Search, filter, check, and export the hierarchy.
+5. Select **Disconnect** to clear the session.
+
+This path bypasses OSF OAuth and CAS entirely.
+
+### Optional: OSF OAuth
+
+OAuth remains available as a secondary path.
 
 ## 1. Create an OSF OAuth application
 

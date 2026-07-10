@@ -4,19 +4,46 @@
   <div class="hero-copy">
     <span class="eyebrow">A private inventory of your OSF workspace</span>
     <h1>Review every project and component in one structured checklist.</h1>
-    <p>Connect your OSF account to see public and private projects, preserve their component hierarchy, track progress, and export the results.</p>
-    {% if not configured %}
-      <div class="alert">This deployment still needs its OSF OAuth environment variables.</div>
-    {% elif connected %}
+    <p>Use an OSF Personal Access Token to load public and private projects without relying on the OSF OAuth/CAS flow.</p>
+
+    {% if connected %}
       <a class="button primary" href="/checklist">Open my checklist</a>
       <a class="button secondary" href="/logout">Disconnect</a>
     {% else %}
-      <a class="button primary" href="/connect/osf">Connect to OSF</a>
+      <form class="token-form" method="post" action="/connect/token" autocomplete="off">
+        <label for="token"><strong>OSF Personal Access Token</strong></label>
+        <p class="form-help">Create a read-only token in OSF, paste it here, and open your checklist.</p>
+        <div class="token-row">
+          <input id="token" name="token" type="password" required spellcheck="false" autocomplete="off" placeholder="Paste token">
+          <button class="button primary" type="submit">Open my checklist</button>
+        </div>
+      </form>
+
+      <details class="oauth-option">
+        <summary>Try OSF OAuth instead</summary>
+        {% if configured %}
+          <p>OAuth may fail when the OSF CAS authorization flow is unavailable.</p>
+          <a class="button secondary" href="/connect/osf">Connect with OSF OAuth</a>
+        {% else %}
+          <p>This deployment does not have OSF OAuth environment variables configured.</p>
+        {% endif %}
+      </details>
     {% endif %}
-    {% if request.query_params.get("error") %}
-      <div class="alert">OSF connection failed: {{ request.query_params.get("error") }}</div>
+
+    {% set error = request.query_params.get("error") %}
+    {% if error %}
+      <div class="alert">
+        {% if error == "missing_personal_token" %}
+          Enter an OSF Personal Access Token.
+        {% elif error == "invalid_personal_token" %}
+          OSF rejected that token. Confirm that it is active and has read access.
+        {% else %}
+          OSF connection failed: {{ error }}
+        {% endif %}
+      </div>
     {% endif %}
   </div>
+
   <div class="preview-card">
     <div class="preview-row"><span>☐</span><strong>Research Project</strong><em>Private</em></div>
     <div class="preview-row child"><span>☐</span><strong>Methods</strong><em>Public</em></div>
@@ -24,8 +51,10 @@
     <div class="preview-row grandchild"><span>☐</span><strong>Pilot Data</strong><em>Private</em></div>
   </div>
 </section>
+
 <section class="privacy">
-  <h2>Designed to minimize retained data</h2>
-  <p>The app requests read access, does not modify OSF content, and stores checklist progress in the user’s browser. The OAuth token is encrypted before being placed in the signed, HTTP-only session cookie.</p>
+  <h2>How the token is handled</h2>
+  <p>The app validates the token with OSF, encrypts it before placing it in the signed HTTP-only session cookie, and does not write it to a database. Disconnecting clears the session. Checklist progress stays in browser local storage.</p>
+  <p><strong>Important:</strong> for a broad public launch, move sessions to server-side storage so the encrypted token is not carried by the browser.</p>
 </section>
 {% endblock %}

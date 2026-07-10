@@ -6,7 +6,7 @@ import os
 import secrets
 import time
 from typing import Any
-from urllib.parse import urlencode
+from urllib.parse import parse_qs, urlencode
 
 import requests
 from cryptography.fernet import Fernet, InvalidToken
@@ -249,6 +249,27 @@ def callback_osf(request: Request, code: str = "", state: str = "", error: str =
         return RedirectResponse("/?error=missing_token", status_code=303)
 
     request.session["osf_token"] = encrypt_token(access_token)
+    request.session["auth_method"] = "oauth"
+    return RedirectResponse("/checklist", status_code=303)
+
+
+@app.post("/connect/token")
+async def connect_token(request: Request):
+    raw_body = (await request.body()).decode("utf-8", errors="replace")
+    form = parse_qs(raw_body, keep_blank_values=True)
+    token = (form.get("token") or [""])[0].strip()
+
+    if not token:
+        return RedirectResponse("/?error=missing_personal_token", status_code=303)
+
+    try:
+        api_get(f"{OSF_API_BASE}/users/me/", token)
+    except RuntimeError:
+        request.session.pop("osf_token", None)
+        return RedirectResponse("/?error=invalid_personal_token", status_code=303)
+
+    request.session["osf_token"] = encrypt_token(token)
+    request.session["auth_method"] = "personal_access_token"
     return RedirectResponse("/checklist", status_code=303)
 
 
