@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">A private inventory of your OSF workspace</span>
+    <h1>Review every project and component in one structured checklist.</h1>
+    <p>Connect your OSF account to see public and private projects, preserve their component hierarchy, track progress, and export the results.</p>
+    {% if not configured %}
+      <div class="alert">This deployment still needs its OSF OAuth environment variables.</div>
+    {% elif connected %}
+      <a class="button primary" href="/checklist">Open my checklist</a>
+      <a class="button secondary" href="/logout">Disconnect</a>
+    {% else %}
+      <a class="button primary" href="/connect/osf">Connect to OSF</a>
+    {% endif %}
+    {% if request.query_params.get("error") %}
+      <div class="alert">OSF connection failed: {{ request.query_params.get("error") }}</div>
+    {% endif %}
+  </div>
+  <div class="preview-card">
+    <div class="preview-row"><span>☐</span><strong>Research Project</strong><em>Private</em></div>
+    <div class="preview-row child"><span>☐</span><strong>Methods</strong><em>Public</em></div>
+    <div class="preview-row child"><span>☑</span><strong>Data</strong><em>Private</em></div>
+    <div class="preview-row grandchild"><span>☐</span><strong>Pilot Data</strong><em>Private</em></div>
+  </div>
+</section>
+<section class="privacy">
+  <h2>Designed to minimize retained data</h2>
+  <p>The app requests read access, does not modify OSF content, and stores checklist progress in the user’s browser. The OAuth token is encrypted before being placed in the signed, HTTP-only session cookie.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,17 @@
+<li class="node" data-guid="{{ node.guid }}" data-public="{{ 'true' if node.public else 'false' }}" data-search="{{ (node.title ~ ' ' ~ node.guid ~ ' ' ~ node.category)|lower }}">
+  <div class="node-row">
+    {% if node.children %}<button class="toggle" aria-label="Expand or collapse">▾</button>{% else %}<span class="toggle-space"></span>{% endif %}
+    <input class="node-check" type="checkbox" aria-label="Mark reviewed">
+    <div class="node-info">
+      <div><a href="{{ node.url }}" target="_blank" rel="noopener">{{ node.title }}</a><span class="badge {{ 'public' if node.public else 'private' }}">{{ 'Public' if node.public else 'Private' }}</span></div>
+      <small>{{ node.guid }}{% if node.category %} · {{ node.category }}{% endif %}</small>
+    </div>
+  </div>
+  {% if node.children %}
+  <ul class="children">
+    {% for node in node.children %}
+      {% include "node.html" %}
+    {% endfor %}
+  </ul>
+  {% endif %}
+</li>

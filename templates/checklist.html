@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block header_actions %}<a class="header-link" href="/logout">Disconnect</a>{% endblock %}
+{% block content %}
+<section class="checklist-heading">
+  <div>
+    <span class="eyebrow">{{ account_name }}</span>
+    <h1>Project checklist</h1>
+  </div>
+  <button class="button primary" id="export">Export CSV</button>
+</section>
+
+<section class="stats">
+  <div><strong>{{ root_count }}</strong><span>Top-level projects</span></div>
+  <div><strong>{{ total }}</strong><span>Projects and components</span></div>
+  <div><strong>{{ public_count }}</strong><span>Public</span></div>
+  <div><strong>{{ private_count }}</strong><span>Private</span></div>
+</section>
+
+<section class="toolbar">
+  <input id="search" type="search" placeholder="Search titles or GUIDs">
+  <select id="visibility">
+    <option value="all">Public and private</option>
+    <option value="public">Public only</option>
+    <option value="private">Private only</option>
+  </select>
+  <select id="completion">
+    <option value="all">Checked and unchecked</option>
+    <option value="unchecked">Unchecked only</option>
+    <option value="checked">Checked only</option>
+  </select>
+  <button id="expand">Expand all</button>
+  <button id="collapse">Collapse all</button>
+  <button id="clear">Clear checks</button>
+  <div class="progress"><span id="progressText">0 of {{ total }} checked</span><i><b id="progressFill"></b></i></div>
+</section>
+
+<section class="tree-panel">
+  <h2>Projects</h2>
+  <ul class="tree">
+    {% for node in roots %}
+      {% include "node.html" %}
+    {% endfor %}
+  </ul>
+</section>
+
+{% if orphans %}
+<section class="tree-panel">
+  <h2>Components without an accessible parent</h2>
+  <p class="muted">These components are accessible to you, but their parent was not returned with your nodes.</p>
+  <ul class="tree">
+    {% for node in orphans %}
+      {% include "node.html" %}
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<script id="rows-data" type="application/json">{{ rows | tojson }}</script>
+{% endblock %}
+{% block scripts %}<script src="/static/checklist.js"></script>{% endblock %}
